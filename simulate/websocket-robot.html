@@ -558,8 +558,88 @@
                 '}';
 
       }
+
+
+
+      else if (obj['type'] === 'findLastTaskStatus') {
+        message =
+                '{' +
+                  '"ori":' + '"' + obj['dest'] + '",' +
+                  '"dest":' + '"' + obj['ori'] + '",' +
+                  '"type":' + '"' + obj['type'] + '",' +
+                  '"id":' + '"' + obj['id'] + '",' +
+                  '"status":0,' +
+                  '"data":{' +
+                    '"taskCode":"5454545xxx",' +
+                    '"taskType":1,' +
+                    '"taskStatus":2,' +
+                    '"stationList":[' +
+                          '{' +
+                            '"sn":1,' +
+                            '"name":' +'"站点1",'+
+                            '"arrivalStatus":1'+
+                          '},' +
+                          '{' +
+                            '"sn":2,' +
+                            '"name":' +'"站点2",'+
+                            '"arrivalStatus":2'+
+                          '},' +
+                          '{' +
+                            '"sn":3,' +
+                            '"name":' +'"站点3",'+
+                            '"arrivalStatus":3'+
+                          '},' +
+                          '{' +
+                            '"sn":4,' +
+                            '"name":' +'"站点4",'+
+                            '"arrivalStatus":1'+
+                          '}' +
+                    ']'+
+                  "}" +
+                '}';
+
+      }
+      else if (obj['type'] === 'taskControlSetting') {
+        message =
+                '{' +
+                  '"ori":' + '"' + obj['dest'] + '",' +
+                  '"dest":' + '"' + obj['ori'] + '",' +
+                  '"type":' + '"' + obj['type'] + '",' +
+                  '"id":' + '"' + obj['id'] + '",' +
+                  '"status":0,' +
+                  '"data":{' +
+                    '"type":' + obj['data']['type'] + ',' +
+                    '"status":1' +
+                  "}" +
+                '}';
+
+      }
+      else if (obj['type'] === 'acceptNewTaskSetting') {
+        message =
+                '{' +
+                  '"ori":' + '"' + obj['dest'] + '",' +
+                  '"dest":' + '"' + obj['ori'] + '",' +
+                  '"type":' + '"' + obj['type'] + '",' +
+                  '"id":' + '"' + obj['id'] + '",' +
+                  '"status":0,' +
+                  '"data":{' +
+                    '"type":' + obj['data']['type'] + ',' +
+                    '"status":2' +
+                  "}" +
+                '}';
+
+      }
      
       else if (obj['type'] === 'uploadFileUploadResult') {
+        return;
+      }
+      else if (obj['type'] === 'uploadCurrentTaskStatus') {
+        return;
+      }
+      else if (obj['type'] === 'uploadArrivedStation') {
+        return;
+      }
+      else if (obj['type'] === 'uploadStatus') {
         return;
       }
       else if (obj['type'] === 'uploadDownloadStatus') {
