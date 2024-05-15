@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div>
+    <label style="margin-right: 30px;">
+      ip：
+      <input type="text" id="ip">
+    </label>
+    <label style="margin-right: 30px;">
+      机器人id：
+      <input type="text" id="robotId">
+    </label>
+    <button onclick="createWs()">连接</button>
+    <button onclick="closeWs()">断开</button>
+  </div>
+  <div style="display: flex;margin: 20px 0;">
+    已发送：
+    <textarea rows="20" cols="50" id="sendMessage"></textarea>
+    <span style="margin-left: 20px;">已接收：</span>
+    <textarea rows="20" cols="50" id="receiveMessage"></textarea>
+    <span style="margin-left: 20px;">显示：</span>
+    <textarea rows="20" cols="50" id="showMessage"></textarea>
+  </div>
+  <div>
+    <!-- <label style="margin-right: 30px;">
+      告警编码：
+      <input type="number" id="warnCode" maxlength="5" minlength="5">
+    </label>
+    <label>
+      <input type="radio" class="radio" name="radio" value="1" checked>
+      告警发生
+    </label>
+    <label>
+      <input type="radio" class="radio" name="radio" value="2">
+      告警解除
+    </label>
+    <label style="margin: 0 30px;">
+      告警时间：
+      <input type="datetime-local" id="warnTime">
+    </label> -->
+    <button onclick="clickBtn()">发送</button>
+  </div>
+  <div>
+    <!-- 在页面中添加一个文本框 -->
+    <span>lineSpeed：</span>
+    <label>
+      <!-- 修改 lineSpeed： -->
+      <input type="text" id="lineSpeedInput" placeholder="输入新的 lineSpeed">
+    </label>
+    <button onclick="updateLineSpeed()">应用</button>
+  </div>
+
+
+  <div>
+    <!-- 在页面中添加一个文本框 -->
+    <span>status:</span>
+    <label>
+      <!-- 修改 status -->
+      <input type="text" id="statusInput" placeholder="输入新的 status">
+    </label>
+    <button onclick="updateStatus()">应用</button>
+  </div>
+
+  <script type="text/javascript">
+    // 默认 lineSpeed 值
+    let externalLineSpeed = 30.5; 
+    function setExternalLineSpeed(speed) {
+      externalLineSpeed = speed;
+    }
+
+    // 更新 lineSpeed 的函数
+    function updateLineSpeed() {
+      const lineSpeedInput = document.getElementById('lineSpeedInput');
+      const newLineSpeed = parseFloat(lineSpeedInput.value);
+
+      if (!isNaN(newLineSpeed)) {
+        setExternalLineSpeed(newLineSpeed);
+        console.log('已更新 lineSpeed:', externalLineSpeed);
+      } else {
+        console.error('请输入有效的数字作为 lineSpeed');
+      }
+    }
+
+    //状态
+    let externalStatus = 0;
+    function setExternalStatus(status) {
+      externalStatus = status;
+    }
+
+
+    function updateStatus() {
+      const statusInput = document.getElementById('statusInput');
+      const newStatus = parseInt(statusInput.value);
+      if (!isNaN(newStatus)) {
+        setExternalStatus(newStatus);
+        console.log('已更新 status:', externalStatus);
+      } else {
+        console.error('请输入有效数字作为 status');
+      }
+    }
+
+    let ws = '';
+    let id = 1;
+    let sendNum = 0;
+    let receiveNum = 0;
+    const sendDom = document.getElementById('sendMessage');
+    const receiveDom = document.getElementById('receiveMessage');
+    const showMessage = document.getElementById('showMessage');
+    let obj;
+
+    const clickBtn = () => {
+      // const warnCode = document.getElementById('warnCode').value;
+      // if (warnCode.length != 5) {
+      //   alert('告警编码只能为5位数字')
+      //   return;
+      // }
+      // const radioList = document.getElementsByClassName('radio');
+      // let radioVal;
+      // [...radioList].some(item => {
+      //   if (item.checked) {
+      //     radioVal = Number(item.value);
+      //     return true
+      //   }
+      // })
+      // let warnTime = document.getElementById('warnTime').value;
+      // if (warnTime) {
+      //   warnTime = warnTime.replace(/T/g, ' ') + ':00'
+      // }
+      const obj = document.getElementById('sendMessage').value;
+      ws.send(obj);
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      // debugger
+      console.log("接受：" + reader.result)
+      obj = JSON.parse(reader.result);
+      if (obj['type'] === 'beat') {
+        
+        obj['data']['lineSpeed'] = externalLineSpeed;
+        obj['data']['status'] = externalStatus;
+
+        message =
+          '{' +
+          '"ori":' + '"' + obj['dest'] + '",' +
+          '"dest":' + '"' + obj['ori'] + '",' +
+          '"type":' + '"' + obj['type'] + '",' +
+          '"id":' + '"' + obj['id'] + '",' +
+          '"status":1,' +
+          '"data":{' +
+              '"x":0.11,' +
+              '"y":-1.89,' +
+              '"direction":80.2,' +
+              '"battery":88,' +
+              '"water":30.5,' +
+              // '"lineSpeed":30.5,' +
+              '"lineSpeed":'+ obj['data']['lineSpeed'] +',' +
+              '"angularSpeed":30.5,' +
+              '"mobileStrength":80,' +
+              '"wifiStrength":80,' +
+              '"buildingId":0,' +
+              '"floorId":2,' +
+              '"childMapId":0,' +
+              // '"status":1,' +
+              '"status":' + obj['data']['status'] +',' +
+              '"heatBatteryModule":{' +
+                '"battery":65,' +
+                '"target":2' +
+                "},"+
+              '"navsysStatus":0,' +
+            '}' +
+          '}';
+        console.log("发送：" + message)
+        ws.send(new Blob([message]));
+        return;
+      } else if (obj['type'] === 'logs') {
+        message =
+                '{' +
+                  '"ori":' + '"' + obj['dest'] + '",' +
+                  '"dest":' + '"' + obj['ori'] + '",' +
+                  '"type":' + '"' + obj['type'] + '",' +
+                  '"id":' + '"' + obj['id'] + '",' +
+                  '"status":0,' +
+                  '"data":[' +
+                    '{' +
+                      '"name":"2020-01-03.log",' +
+                      '"size":1024' +
+                    '}' +
+                "]" +
+                '}';
+      }  else if (obj['type'] === 'videos') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"type":' + '"' + obj['type'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"status":1,' +
+                '"data":[' +
+                  '"2020-01-03.log,1024","2020-01-03.log,5555",' +
+                  '"2020-01-05.log","2020-01-06.log"' +
+                  "]" +
+                '}';
+      } else if (obj['type'] === 'getCurrentPathPointList') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"type":' + '"' + obj['type'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"status":0,' +
+                '"data":{' +
+                '"previousPathPoints":["前二","前一"],' +
+                '"currentPathPoint":["当前"],' +
+                '"nextPathPoints":["后一","后二"]' +
+                "}" +
+                '}';
+      }
+
+      else if (obj['type'] === 'currMapInfo') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"type":' + '"' + obj['type'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"status":1,' +
+                '"data":{' +
+                '"mapId":'+'"A_P001_00"' +
+                "}" +
+                '}';
+      }
+      else if (obj['type'] === 'getElevatorNumbers') {
+        message =
+                '{' +
+                  '"ori":' + '"' + obj['dest'] + '",' +
+                  '"dest":' + '"' + obj['ori'] + '",' +
+                  '"type":' + '"' + obj['type'] + '",' +
+                  '"id":' + '"' + obj['id'] + '",' +
+                  '"status":0,' +
+                  '"data":{' +
+                    '"numbers":[1,2,3]' +
+                    "}" +
+                '}';
+      }  else if (obj['type'] === 'getDoorNumbers') {
+        message =
+                '{' +
+                  '"ori":' + '"' + obj['dest'] + '",' +
+                  '"dest":' + '"' + obj['ori'] + '",' +
+                  '"type":' + '"' + obj['type'] + '",' +
+                  '"id":' + '"' + obj['id'] + '",' +
+                  '"status":0,' +
+                  '"data":{' +
+                    '"numbers":[1,2,3,4,5]' +
+                    "}" +
+                '}';
+
+      } else if (obj['type'] === 'getCurrentTask') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"type":' + '"' + obj['type'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"status":0,' +
+                '"data":{' +
+                  '"mode":1,' +
+                  '"message":1' +
+                "}" +
+                '}';
+
+      } else if (obj['type'] === 'getCurrentTask') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"type":' + '"' + obj['type'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"status":0,' +
+                '"data":[' +
+                    '{' +
+                    '"fileType":1,' +
+                    '"name":' +'"xx.setting"'+
+                    '}' +
+                  ']' +
+                '}';
+
+      } else if (obj['type'] === 'route') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"type":' + '"' + obj['type'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"status":1,' +
+                '"data":[' +
+                  '[0,0],[7, 23]'+
+                ']' +
+                '}';
+      } else if (obj['type'] === 'moveConveyorBelt') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"type":' + '"' + obj['type'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"status":1,' +
+                '"data":{' +
+                '"result":2' +
+                "}" +
+                '}';
+
+      }
+      else if (obj['type'] === 'reGrabBoxes') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"type":' + '"' + obj['type'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"status":1,' +
+                '"data":{' +
+                '"result":2' +
+                "}" +
+                '}';
+
+      } else if (obj['type'] === 'executeTaskByWarnScreenshot') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"type":' + '"' + obj['type'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"status":1,' +
+                '"data":{' +
+                  '"result":0' +
+                "}" +
+                '}';
+
+      }
+      else if (obj['type'] === 'settingsInfo') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"type":' + '"' + obj['type'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"status":1,' +
+                '"data":[' +
+                        '{' +
+                          '"fileType":0,' +
+                          '"name":' +'"0xx.setting",'+
+                          '"mapId":' +'"mapId4xx.setting",'+
+                          '"building":1,'+
+                          '"floor":2,'+
+                          '"areaId":5'+
+                        '},' +
+                        '{' +
+                          '"fileType":1,' +
+                          '"name":' +'"1xx.setting",'+
+                          '"mapId":' +'"mapId4xx.setting",'+
+                          '"building":1,'+
+                          '"floor":2,'+
+                          '"areaId":5'+
+                        '},' +
+                        '{' +
+                          '"fileType":2,' +
+                          '"name":' +'"2xx.setting",'+
+                          '"mapId":' +'"mapId4xx.setting",'+
+                          '"building":1,'+
+                          '"floor":2,'+
+                          '"areaId":5'+
+                        '},' +
+                      '{' +
+                        '"fileType":3,' +
+                        '"name":' +'"3xx.setting",'+
+                        '"mapId":' +'"mapId4xx.setting",'+
+                        '"building":1,'+
+                        '"floor":2,'+
+                        '"areaId":5'+
+                      '},' +
+                      '{' +
+                        '"fileType":4,' +
+                        '"name":' +'"4xx.setting",'+
+                        '"mapId":' +'"mapId4xx.setting",'+
+                        '"building":1,'+
+                        '"floor":2,'+
+                        '"areaId":5'+
+                      '},' +
+                      '{' +
+                      '"fileType":5,' +
+                        '"name":' +'"5xx.setting",'+
+                        '"mapId":' +'"mapId4xx.setting",'+
+                        '"building":1,'+
+                        '"floor":2,'+
+                        '"areaId":5'+
+                      '},' +
+                      '{' +
+                        '"fileType":6,' +
+                        '"name":' +'"6xx.setting",'+
+                        '"mapId":' +'"mapId4xx.setting",'+
+                        '"building":1,'+
+                        '"floor":2,'+
+                        '"areaId":5'+
+                      '},' +
+                      '{' +
+                        '"fileType":7,' +
+                        '"name":' +'"7xx.setting",'+
+                        '"mapId":' +'"mapId4xx.setting",'+
+                        '"building":1,'+
+                        '"floor":2,'+
+                        '"areaId":5'+
+                      '},' +
+                      '{' +
+                        '"fileType":100,' +
+                        '"name":' +'"100xx.setting",'+
+                        '"mapId":' +'"mapId4xx.setting",'+
+                        '"building":1,'+
+                        '"floor":2,'+
+                        '"areaId":5'+
+                      '},' +
+                      '{' +
+                        '"fileType":101,' +
+                        '"name":' +'"101xx.setting",'+
+                        '"mapId":' +'"mapId4xx.setting",'+
+                        '"building":1,'+
+                        '"floor":2,'+
+                        '"areaId":5'+
+                      '},' +
+                      '{' +
+                        '"fileType":102,' +
+                        '"name":' +'"102xx.setting",'+
+                        '"mapId":' +'"mapId4xx.setting",'+
+                        '"building":1,'+
+                        '"floor":2,'+
+                        '"areaId":5'+
+                      '},' +
+                      '{' +
+                        '"fileType":110,' +
+                        '"name":' +'"110xx.setting",'+
+                        '"mapId":' +'"mapId4xx.setting",'+
+                        '"building":1,'+
+                        '"floor":2,'+
+                        '"areaId":5'+
+                      '},' +
+                      '{' +
+                        '"fileType":200,' +
+                        '"name":' +'"200xx.setting",'+
+                        '"mapId":' +'"mapId4xx.setting",'+
+                        '"building":1,'+
+                        '"floor":2,'+
+                        '"areaId":5'+
+                      '},' +
+                      '{' +
+                          '"fileType":400,' +
+                          '"name":' +'"400xx.setting",'+
+                          '"mapId":' +'"mapId4xx.setting",'+
+                          '"building":1,'+
+                          '"floor":2,'+
+                          '"areaId":5'+
+                      '}' +
+                    ']' +
+                '}';
+      } else if (obj['type'] === 'getCheckLiftLink') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"type":' + '"' + obj['type'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"status":1,' +
+                '"data":{' +
+                      '"building":1,' +
+                      '"number":10,' +
+                      '"type":3,' +
+                      '"status":2,' +
+                      '"statusDesc":"123--123",' +
+                      '"mode":2' +
+                    "}" +
+                '}';
+
+      } else if (obj['type'] === 'getSupport') {
+        message =
+                '{' +
+                  '"ori":' + '"' + obj['dest'] + '",' +
+                  '"dest":' + '"' + obj['ori'] + '",' +
+                  '"type":' + '"' + obj['type'] + '",' +
+                  '"id":' + '"' + obj['id'] + '",' +
+                  '"status":1,' +
+                  '"data":{' +
+                    '"deploy":1' +
+                    "}" +
+                '}';
+      } else if (obj['type'] === 'getDeployBag') {
+        message =
+                '{' +
+                  '"ori":' + '"' + obj['dest'] + '",' +
+                  '"dest":' + '"' + obj['ori'] + '",' +
+                  '"type":' + '"' + obj['type'] + '",' +
+                  '"id":' + '"' + obj['id'] + '",' +
+                  '"status":1,' +
+                  '"data":{' +
+                    '"name":"4545454ff.txt",' +
+                    '"size":1000' +
+                  "}" +
+                '}';
+
+      } else if (obj['type'] === 'saiteGetAdminPassword') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"type":' + '"' + obj['type'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"status":0,' +
+                '"data":{' +
+                '"date":"2023-03-29",' +
+                '"password":"569807",' +
+                '"robotId":"ST-C2-50021"' +
+                "}" +
+                '}';
+
+      }
+      else if (obj['type'] === 'switchAntiFall') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"type":' + '"' + obj['type'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"status":0,' +
+                '"data":{' +
+                  '"type":0,' +
+                  '"status":1,' +
+                "}" +
+                '}';
+
+      }
+      else if (obj['type'] === 'recoverAntiFall') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"type":' + '"' + obj['type'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"status":0,' +
+                '"data":{' +
+                '"status":1,' +
+                "}" +
+                '}';
+
+      }
+     
+      else if (obj['type'] === 'uploadFileUploadResult') {
+        return;
+      }
+      else if (obj['type'] === 'uploadDownloadStatus') {
+        return;
+      }
+      else if (obj['type'] === 'softUpgradeStatus') {
+        return;
+      }
+      else if (obj['type'] === 'uploadArrivedElevator') {
+        return;
+      } else if (obj['type'] === 'rebootManipulatorResult') {
+        return;
+      } else if (obj['type'] === 'retryConnectionDeviceResult') {
+        return;
+      } else if (obj['type'] === 'uploadSoftStopStatus') {
+        return;
+      } else if (obj['type'] === 'callDoorResult') {
+        return;
+      } else if (obj['type'] === 'uploadAlarmData') {
+        return;
+      } else if (obj['type'] === 'replyConnectionResult') {
+        return;
+      } else if (obj['type'] === 'uploadTaskBegin') {
+        return;
+      }  else if (obj['type'] === 'routeChg') {
+        return;
+      } else if (obj['type'] === 'uploadTimeMileageData') {
+        return;
+      } else if (obj['type'] === 'uploadBusinessData') {
+        return;
+      }
+      else if (obj['type'] === 'uploadPushFlowStatus') {
+        return;
+      }
+	  else if (obj['type'] === 'uploadBmsInfo') {
+        return;
+      }
+	  else if (obj['type'] === 'uploadBatteryMaintenanceResult') {
+        return;
+      }
+      else if (obj['type'] === 'uploadTaskEnd') {
+        return;
+      } else if (obj['type'] === 'uploadStopStatus') {
+        return;
+      }
+      else {
+        message =
+          '{' +
+          '"ori":' + '"' + obj['dest'] + '",' +
+          '"dest":' + '"' + obj['ori'] + '",' +
+          '"type":' + '"' + obj['type'] + '",' +
+          '"id":' + '"' + obj['id'] + '",' +
+          '"status":0' +
+          '}';
+
+      }
+
+      setTimeout(() => {
+        console.log("发送：" + message)
+        ws.send(new Blob([message]));
+      }, 100);
+      showMessage.append(message);
+    }
+
+    const createWs = () => {
+      // const robotId = document.getElementById('robotId').value;
+      // const ip = document.getElementById('ip').value;
+      
+	  const ip = "192.168.20.86:10088";
+      //const ip = "192.168.1.139:10088";
+      // const ip = "192.168.0.67:10088";
+      // const ip = "8.134.9.86:10088";
+      // const ip = "192.168.0.65";
+      
+	  // const ip = "121.32.24.86:10088";
+      // const ip = "121.32.24.86:3000/:10088";
+      //const robotId = "ST-S200-001";
+      // const robotId = "ST-K1-8888";
+      // const robotId = "aaaaa0000000";
+      const robotId = "ST-SL3-0000003";
+      
+      // const robotId = "ST-E1-5069";
+      // const robotId = "ST-C2-C3012";
+      // const robotId = "DCVA2A020B0001000000";
+      // const robotId = "12344fadf";
+      if (!ip) {
+        alert('请先填写ip');
+        return;
+      }
+      if (!robotId) {
+        alert('请先填写机器人id');
+        return;
+      }
+      ws = new WebSocket(`ws://${ip}/ws/r/${robotId}`);
+      // ws = new WebSocket(`ws://${ip}:10088/ws/r/${robotId}`);
+      ws.onopen = () => {
+        alert('已成功连接');
+        // setInterval(() => {
+        //
+        // }, 5000)
+      }
+      ws.onmessage = e => {
+        console.log(e.data);
+        reader.readAsText(e.data);
+      };
+      ws.onclose = () => {
+        alert('websocket连接已关闭')
+      };
+      ws.onerror = () => {
+        alert('websocket连接错误')
+      }
+    }
+
+    const closeWs = () => {
+      ws.close();
+    }
+
+    function strToBinary(str) {
+      var result = [];
+      var list = str.split("");
+      for (var i = 0; i < list.length; i++) {
+        if (i != 0) {
+          result.push(" ");
+        }
+        var item = list[i];
+        var binaryStr = item.charCodeAt().toString(2);
+        result.push(binartStr);
+      }
+      return result.join("");
+    }
+
+    function binaryToStr(str) {
+      var result = [];
+      var list = str.split(" ");
+      for (var i = 0; i < list.length; i++) {
+        var item = list[i];
+        var asciiCode = parseInt(item, 2);
+        var charValue = String.fromCharCode(asciiCode);
+        result.push(charValue);
+      }
+      return result.join("");
+    }
+  </script>
+</body>
+
+</html>

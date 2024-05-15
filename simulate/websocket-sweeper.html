@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div>
+    <label style="margin-right: 30px;">
+      ip：
+      <input type="text" id="ip">
+    </label>
+    <label style="margin-right: 30px;">
+      机器人id：
+      <input type="text" id="robotId">
+    </label>
+    <button onclick="createWs()">连接</button>
+    <button onclick="closeWs()">断开</button>
+  </div>
+  <div style="display: flex;margin: 20px 0;">
+    已发送：
+    <textarea rows="20" cols="50" id="sendMessage"></textarea>
+    <span style="margin-left: 20px;">已接收：</span>
+    <textarea rows="20" cols="50" id="receiveMessage"></textarea>
+    <span style="margin-left: 20px;">显示：</span>
+    <textarea rows="20" cols="50" id="showMessage"></textarea>
+  </div>
+  <div>
+    <!-- <label style="margin-right: 30px;">
+      告警编码：
+      <input type="number" id="warnCode" maxlength="5" minlength="5">
+    </label>
+    <label>
+      <input type="radio" class="radio" name="radio" value="1" checked>
+      告警发生
+    </label>
+    <label>
+      <input type="radio" class="radio" name="radio" value="2">
+      告警解除
+    </label>
+    <label style="margin: 0 30px;">
+      告警时间：
+      <input type="datetime-local" id="warnTime">
+    </label> -->
+    <button onclick="clickBtn()">发送</button>
+  </div>
+
+    <div>
+    <!-- 在页面中添加一个文本框 -->
+    <span>lineSpeed：</span>
+    <label>
+      <!-- 修改 lineSpeed： -->
+      <input type="text" id="lineSpeedInput" placeholder="输入新的 lineSpeed">
+    </label>
+    <button onclick="updateLineSpeed()">应用</button>
+  </div>
+
+
+  <div>
+    <!-- 在页面中添加一个文本框 -->
+    <span>status:</span>
+    <label>
+      <!-- 修改 status -->
+      <input type="text" id="statusInput" placeholder="输入新的 status">
+    </label>
+    <button onclick="updateStatus()">应用</button>
+  </div>
+
+  <div>
+    <!-- 在页面中添加一个文本框 -->
+    <span>trafficLightCrossRoad:</span>
+    <label>
+      <!-- 修改 trafficLightCrossRoad -->
+      <input type="text" id="trafficLightCrossRoadInput" placeholder="输入新的 trafficLightCrossRoad">
+    </label>
+    <button onclick="updateTrafficLightCrossRoad()">应用</button>
+  </div>
+
+  <script type="text/javascript">
+  // 默认 travelSpeed 值
+    let externalLineSpeed = 30.5; 
+    function setExternalLineSpeed(speed) {
+      externalLineSpeed = speed;
+    }
+    // 更新 travelSpeed 的函数
+    function updateLineSpeed() {
+      const lineSpeedInput = document.getElementById('lineSpeedInput');
+      const newLineSpeed = parseFloat(lineSpeedInput.value);
+
+      if (!isNaN(newLineSpeed)) {
+        setExternalLineSpeed(newLineSpeed);
+        console.log('已更新 lineSpeed:', externalLineSpeed);
+      } else {
+        console.error('请输入有效的数字作为 lineSpeed');
+      }
+    }
+
+    //红绿灯
+    let trafficLightCrossRoad = 0;
+    function setTrafficLightCrossRoad(v) {
+      trafficLightCrossRoad = v;
+    }
+    function updateTrafficLightCrossRoad() {
+      const statusInput = document.getElementById('trafficLightCrossRoadInput');
+      const newStatus = parseInt(statusInput.value);
+      if (!isNaN(newStatus)) {
+        setTrafficLightCrossRoad(newStatus);
+        console.log('已更新 v:', trafficLightCrossRoad);
+      } else {
+        console.error('请输入有效数字作为 v');
+      }
+    }
+
+    //状态
+    let externalStatus = 0;
+    function setExternalStatus(status) {
+      externalStatus = status;
+    }
+    function updateStatus() {
+      const statusInput = document.getElementById('statusInput');
+      const newStatus = parseInt(statusInput.value);
+      if (!isNaN(newStatus)) {
+        setExternalStatus(newStatus);
+        console.log('已更新 status:', externalStatus);
+      } else {
+        console.error('请输入有效数字作为 status');
+      }
+    }
+
+
+    let ws = '';
+    let id = 1;
+    let sendNum = 0;
+    let receiveNum = 0;
+    const sendDom = document.getElementById('sendMessage');
+    const receiveDom = document.getElementById('receiveMessage');
+    const showMessage = document.getElementById('showMessage');
+    let obj;
+
+    const clickBtn = () => {
+      // const warnCode = document.getElementById('warnCode').value;
+      // if (warnCode.length != 5) {
+      //   alert('告警编码只能为5位数字')
+      //   return;
+      // }
+      // const radioList = document.getElementsByClassName('radio');
+      // let radioVal;
+      // [...radioList].some(item => {
+      //   if (item.checked) {
+      //     radioVal = Number(item.value);
+      //     return true
+      //   }
+      // })
+      // let warnTime = document.getElementById('warnTime').value;
+      // if (warnTime) {
+      //   warnTime = warnTime.replace(/T/g, ' ') + ':00'
+      // }
+      const obj = document.getElementById('sendMessage').value;
+      ws.send(obj);
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      console.log("接受：" + reader.result)
+      obj = JSON.parse(reader.result);
+      if (obj['cmd'] === 'getHeartbeat') {
+
+        // obj['data']['travelSpeed'] = externalLineSpeed;
+        // obj['data']['status'] = externalStatus;
+
+        message =
+          '{' +
+          '"ori":' + '"' + obj['dest'] + '",' +
+          '"dest":' + '"' + obj['ori'] + '",' +
+          '"cmd":' + '"' + obj['cmd'] + '",' +
+          '"id":' + '"' + obj['id'] + '",' +
+          '"time":' + '"' + obj['time'] + '",' +
+          '"status":0,' +
+          '"data":{' +
+          // '"status":0,' +
+          '"status":' + externalStatus +',' +
+          '"statusChargeHand":0,' +
+          '"statusFault":0,' +
+          '"gpsCoor":[0.00, 0.00],' +
+          '"mapCoor":[0.545454545, 0.8787878, 180.0],' +
+          // '"travelSpeed":30.1,' +
+          '"travelSpeed":'+ externalLineSpeed +',' +
+          '"steeringAngle":1.0,' +
+          '"mapYawAngle": "1.000000",'+
+          '"energyRemain":60.5,' +
+          '"batVol":0.5,' +
+          '"batTemp":25.5,' +
+          '"waterRemain":30.5,' +
+          '"dumpRemain":50.5,' +
+          '"pm25Value":3.0,' +
+          '"ambientTemp":8.5,' +
+          '"ambientHum":6.5,' +
+          '"rainy":3,' +
+          '"light":66,' +
+          '"gpsSignal":0,' +
+          '"trafficLightCrossRoad":' + trafficLightCrossRoad +
+          '}' +
+          '}';
+        // ws.send(new Blob([message]));
+        // return;
+      } else if (obj['cmd'] === 'getVersionList') {
+        message =
+          '{' +
+          '"ori":' + '"' + obj['dest'] + '",' +
+          '"dest":' + '"' + obj['ori'] + '",' +
+          '"cmd":' + '"' + obj['cmd'] + '",' +
+          '"id":' + '"' + obj['id'] + '",' +
+          '"time":' + '"' + obj['time'] + '",' +
+          '"status":0,' +
+          '"data":{' +
+          '"versions":[' +
+          '{' +
+          '"type":1,' +
+          '"version":"V2.2"' +
+          '},' +
+          '{' +
+          '"type":5,' +
+          '"version":"V4.2"' +
+          '},' +
+          ']' +
+          '}' +
+          '}';
+      } else if (obj['cmd'] === 'getMapList') {
+        message =
+          '{' +
+            '"ori":' + '"' + obj['dest'] + '",' +
+            '"dest":' + '"' + obj['ori'] + '",' +
+            '"cmd":' + '"' + obj['cmd'] + '",' +
+            '"id":' + '"' + obj['id'] + '",' +
+            '"time":' + '"' + obj['time'] + '",' +
+            '"status":0,' +
+            '"data":{' +
+              '"maps":[' +
+                '{' +
+                '"code":"A001",' +
+                '"version":"2.5",' +
+                '"image":"12212122.png",' +
+                '"resolution":0.5,' +
+                '"origin":[-14.5,-6.4,25.0],' +
+                '},' +
+                '{' +
+                '"code":"A002",' +
+                '"version":"2.1",' +
+                '"image":"111.png",' +
+                '"resolution":0.5,' +
+                '"origin":[-20.5,-20.4,25.0],' +
+                '},' +
+                '{' +
+                  '"code":"0",' +
+                  '"version":"005",' +
+                  '"image":"background_map_01.png",' +
+                  '"resolution":0.0927724,' +
+                  '"origin":[-42.854122, -307.35596],' +
+                  '"extendInfo": {'+
+                        '"no": "21",'+
+                        '"originX": -142.15452575683594,'+
+                        '"originY": -215.26229858398438,'+
+                        '"layers":['+
+                            '{'+
+                                '"layerIdx": 0,'+
+                                '"piecesNumOfY": 1,'+
+                                '"piecesNumOfX": 1,'+
+                                '"resolution": 0.10000000149011612,'+
+                                '"layerMaps": ['+
+                                    '"0_0_0.png"'+
+                              ' ]'+
+                          '}'+
+                        '],'+
+                        '"pieceSize": 1000,'+
+                        '"layerScale": 4,'+
+                        '"blankPng": "blank.png",'+
+                        '"layerNum": 1'+
+                    '}'+
+                '}' +
+              ']' +
+            '}' +
+          '}';
+      }
+      else if (obj['cmd'] === 'getCurrentMapCode') {
+        message =
+          '{' +
+          '"ori":' + '"' + obj['dest'] + '",' +
+          '"dest":' + '"' + obj['ori'] + '",' +
+          '"cmd":' + '"' + obj['cmd'] + '",' +
+          '"id":' + '"' + obj['id'] + '",' +
+          '"time":' + '"' + obj['time'] + '",' +
+          '"status":0,' +
+          '"data":{' +
+          '"code":"0"' +
+          "}" +
+          '}';
+      } else if (obj['cmd'] === 'getPointCloud') {
+        message =
+          '{' +
+          '"ori":' + '"' + obj['dest'] + '",' +
+          '"dest":' + '"' + obj['ori'] + '",' +
+          '"cmd":' + '"' + obj['cmd'] + '",' +
+          '"id":' + '"' + obj['id'] + '",' +
+          '"time":' + '"' + obj['time'] + '",' +
+          '"status":0,' +
+          '"data":{' +
+          '"points":[[1.2,3.1],[5.5,6.6]]' +
+          "}" +
+          '}';
+      } else if (obj['cmd'] === 'getLogList') {
+        message =
+          '{' +
+          '"ori":' + '"' + obj['dest'] + '",' +
+          '"dest":' + '"' + obj['ori'] + '",' +
+          '"cmd":' + '"' + obj['cmd'] + '",' +
+          '"id":' + '"' + obj['id'] + '",' +
+          '"time":' + '"' + obj['time'] + '",' +
+          '"status":0,' +
+          '"data":{' +
+          // '"status":1,' +
+          '"logs":[' +
+                '{' +
+                '"name":"OSFileIO.java",' +
+                '"size":4298' +
+                '}' +
+              ']' +
+            '}' +
+          '}';
+      } else if (obj['cmd'] === 'cancelUpgradeSoftware') {
+        message =
+          '{' +
+          '"ori":' + '"' + obj['dest'] + '",' +
+          '"dest":' + '"' + obj['ori'] + '",' +
+          '"cmd":' + '"' + obj['cmd'] + '",' +
+          '"id":' + '"' + obj['id'] + '",' +
+          '"time":' + '"' + obj['time'] + '",' +
+          '"status":0,' +
+          '"data":{' +
+          '"records":["1468839360270053376","1468830365312495616"]' +
+          "}" +
+          '}';
+      } else if (obj['cmd'] === 'cancelUpdateProfile') {
+        message =
+          '{' +
+          '"ori":' + '"' + obj['dest'] + '",' +
+          '"dest":' + '"' + obj['ori'] + '",' +
+          '"cmd":' + '"' + obj['cmd'] + '",' +
+          '"id":' + '"' + obj['id'] + '",' +
+          '"time":' + '"' + obj['time'] + '",' +
+          '"status":0,' +
+          '"data":{' +
+          '"records":["1475378483550105600","1468830365312495616"]' +
+          "}" +
+          '}';
+      } else if (obj['cmd'] === 'getProfileList') {
+        message =
+          '{' +
+          '"ori":' + '"' + obj['dest'] + '",' +
+          '"dest":' + '"' + obj['ori'] + '",' +
+          '"cmd":' + '"' + obj['cmd'] + '",' +
+          '"id":' + '"' + obj['id'] + '",' +
+          '"time":' + '"' + obj['time'] + '",' +
+          '"status":0,' +
+          '"data":{' +
+          '"profiles":[' +
+          '{' +
+          '"type":1,' +
+          '"name":"111.path",' +
+          '"size":1111' +
+          '},' +
+          '{' +
+          '"type":2,' +
+          '"name":"222.path",' +
+          '"size":12252' +
+          '},' +
+          '{' +
+          '"type":3,' +
+          '"name":"333.png",' +
+          '"size":352525' +
+          '}' +
+          ']' +
+          '}' +
+          '}';
+      } else if (obj['cmd'] === 'getHistoryVideoList') {
+        message =
+          '{' +
+          '"ori":' + '"' + obj['dest'] + '",' +
+          '"dest":' + '"' + obj['ori'] + '",' +
+          '"cmd":' + '"' + obj['cmd'] + '",' +
+          '"id":' + '"' + obj['id'] + '",' +
+          '"time":' + '"' + obj['time'] + '",' +
+          '"status":0,' +
+          '"data":{' +
+          '"videoList":[' +
+          '{' +
+          '"videoId":1,' +
+          '"videoName":"2021-12-15_12-10_12-20.avi",' +
+          '"cameraId":1' +
+          '},' +
+          '{' +
+          '"videoId":2,' +
+          '"videoName":"2021-12-15_12-30_12-40.avi",' +
+          '"cameraId":1' +
+          '},' +
+          '{' +
+          '"videoId":3,' +
+          '"videoName":"2021-12-15_13-30_13-40.avi",' +
+          '"cameraId":1' +
+          '},' +
+          ']' +
+          '}' +
+          '}';
+      } else if (obj['cmd'] === 'pushLiveStream') {
+        message =
+          '{' +
+            '"ori":'+'"' + obj['dest'] + '",' +
+            '"dest":'+ '"' + obj['ori'] + '",' +
+            '"cmd":'+ '"' + obj['cmd'] + '",' +
+            '"id":'+ '"' +obj['id'] + '",' +
+            '"time":' + '"' + obj['time'] + '",' +
+            '"status":0,' +
+            '"data":{' +
+            '"pushList":[' +
+                        '{' +
+                          '"cameraId":' +'"'+obj['data']['pushList'][0]['cameraId']+'",' +
+                          '"pushUrl":'+'"'+ obj['data']['pushList'][0]['pushUrl']+ '",' +
+                          '"pullUrl":'+'"'+ obj['data']['pushList'][0]['pullUrl']+ '",' +
+                          // '"pushUrl":'+'"'+ 'rtmp://push.saiterobot.com/live/faf4a54a4f4-1?auth_key=1648523204-0-0-9810f4983af75285321057a9e7fd184c'+ '",' +
+                          // '"pullUrl":'+'"'+ 'artc://play.saiterobot.com/live/faf4a54a4f4-1?auth_key=1648523204-0-0-9810f4983af75285321057a9e7fd184c'+ '"' +
+                          '"urlExpireTime":'+'"'+ obj['data']['pushList'][0]['urlExpireTime']+ '"' +
+                        '}' +
+                        // '{' +
+                        // '"cameraId":' +'"'+obj['data']['pushList'][1]['cameraId']+'",' +
+                        // '"pushUrl":'+'"'+ obj['data']['pushList'][1]['pushUrl']+ '",' +
+                        // '"pullUrl":'+'"'+ obj['data']['pushList'][1]['pullUrl']+ '",' +
+                        // // '"pushUrl":'+'"'+ 'rtmp://push.saiterobot.com/live/faf4a54a4f4-1?auth_key=1648523204-0-0-9810f4983af75285321057a9e7fd184c'+ '",' +
+                        // // '"pullUrl":'+'"'+ 'artc://play.saiterobot.com/live/faf4a54a4f4-1?auth_key=1648523204-0-0-9810f4983af75285321057a9e7fd184c'+ '"' +
+                        // '"urlExprieTime":'+'"'+ obj['data']['pushList'][1]['urlExpireTime']+ '"' +
+                        // '},' +
+                        // '{' +
+                        // '"cameraId":' +'"'+obj['data']['pushList'][2]['cameraId']+'",' +
+                        // '"pushUrl":'+'"'+ obj['data']['pushList'][2]['pushUrl']+ '",' +
+                        // '"pullUrl":'+'"'+ obj['data']['pushList'][2]['pullUrl']+ '",' +
+                        // // '"pushUrl":'+'"'+ 'rtmp://push.saiterobot.com/live/faf4a54a4f4-1?auth_key=1648523204-0-0-9810f4983af75285321057a9e7fd184c'+ '",' +
+                        // // '"pullUrl":'+'"'+ 'artc://play.saiterobot.com/live/faf4a54a4f4-1?auth_key=1648523204-0-0-9810f4983af75285321057a9e7fd184c'+ '"' +
+                        // '"urlExprieTime":'+'"'+ obj['data']['pushList'][2]['urlExpireTime']+ '"' +
+                        // '},' +
+                        // '{' +
+                        // '"cameraId":' +'"'+obj['data']['pushList'][3]['cameraId']+'",' +
+                        // '"pushUrl":'+'"'+ obj['data']['pushList'][3]['pushUrl']+ '",' +
+                        // '"pullUrl":'+'"'+ obj['data']['pushList'][3]['pullUrl']+ '",' +
+                        // // '"pushUrl":'+'"'+ 'rtmp://push.saiterobot.com/live/faf4a54a4f4-1?auth_key=1648523204-0-0-9810f4983af75285321057a9e7fd184c'+ '",' +
+                        // // '"pullUrl":'+'"'+ 'artc://play.saiterobot.com/live/faf4a54a4f4-1?auth_key=1648523204-0-0-9810f4983af75285321057a9e7fd184c'+ '",' +
+                        // '"urlExprieTime":'+'"'+ obj['data']['pushList'][3]['urlExpireTime']+ '"' +
+                        // '}' +
+                    ']' +
+              '}' +
+          '}';
+      } else if (obj['type'] === 'replyConnectionResult') {
+        return;
+      } else if (obj['cmd'] === 'replyConnectionResult') {
+        return;
+      } else if (obj['cmd'] === 'uploadShutdownStatus') {
+        return;
+      } else if (obj['cmd'] === 'uploadDownloadStatus') {
+        return;
+      } else if (obj['cmd'] === 'uploadDownloadProgress') {
+        return;
+      } else if (obj['cmd'] === 'uploadUpgradeStatus') {
+        return;
+      } else if (obj['cmd'] === 'uploadStopStatus') {
+        return;
+      } else if (obj['cmd'] === 'uploadAlarm') {
+        return;
+      } else if (obj['cmd'] === 'uploadPartUsageData') {
+        return;
+      } else if (obj['cmd'] === 'uploadRoute') {
+        return;
+      } else if (obj['cmd'] === 'uploadTaskBegin') {
+        return;
+      } else if (obj['cmd'] === 'uploadTaskEnd') {
+        return;
+      } else if (obj['cmd'] === 'uploadOnOffPlan') {
+        return;
+      } else if (obj['cmd'] === 'uploadMoveStatus') {
+        return;
+      } else if (obj['cmd'] === 'uploadDriverMode') {
+        return;
+      } else if (obj['cmd'] === 'uploadLampStatus') {
+        return;
+      } else if (obj['cmd'] === 'uploadPushLiveStreamStatus') {
+        return;
+      } else if (obj['cmd'] === 'uploadBmsInfo') {
+        return;
+      } else if (obj['cmd'] === 'uploadBatteryMaintenanceResult') {
+        return;
+      } else if (obj['cmd'] === 'getFileUploadUrl') {
+        return;
+      } else if (obj['cmd'] === 'fileUploadProcess') {
+        return;
+      } else if (obj['cmd'] === 'fileUploadStatus') {
+        return;
+      }
+      
+      
+      else if (obj['cmd'] === 'getRemainingRoute') {
+        message =
+          '{' +
+          '"ori":' + '"' + obj['dest'] + '",' +
+          '"dest":' + '"' + obj['ori'] + '",' +
+          '"cmd":' + '"' + obj['cmd'] + '",' +
+          '"id":' + '"' + obj['id'] + '",' +
+          '"time":' + '"' + obj['time'] + '",' +
+          '"status":0,' +
+          '"data":{' +
+              '"points":[' +
+                       '[51.32,-170.42],[43.46038,-165.2702]' +
+                 ']' +
+             '}' +
+          '}';
+      } else if (obj['cmd'] === 'getLoginPassword') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"cmd":' + '"' + obj['cmd'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"time":' + '"' + obj['time'] + '",' +
+                '"status":0,' +
+                '"data":{' +
+                '"password":"123456789"' +
+                '}' +
+                '}';
+      } else if (obj['cmd'] === 'getDeviceLocalStatus') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"cmd":' + '"' + obj['cmd'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"time":' + '"' + obj['time'] + '",' +
+                '"status":0,' +
+                '"data":{' +
+                '"chargeMode":1' +
+                '}' +
+                '}';
+      }
+      else if (obj['cmd'] === 'switchDriverMode') {
+        message =
+                '{' +
+                '"ori":' + '"' + obj['dest'] + '",' +
+                '"dest":' + '"' + obj['ori'] + '",' +
+                '"cmd":' + '"' + obj['cmd'] + '",' +
+                '"id":' + '"' + obj['id'] + '",' +
+                '"time":' + '"' + obj['time'] + '",' +
+                
+                // '"data":{' +
+                // '"status":1' +
+                // '},' +
+                '"status":0' +
+                '}';
+      }
+      
+      
+      
+      else {
+        message =
+          '{' +
+          '"ori":' + '"' + obj['dest'] + '",' +
+          '"dest":' + '"' + obj['ori'] + '",' +
+          '"cmd":' + '"' + obj['cmd'] + '",' +
+          '"id":' + '"' + obj['id'] + '",' +
+          '"time":' + '"' + obj['time'] + '",' +
+          '"status":0' +
+          '}';
+      }
+      setTimeout(() => {
+        console.log("发送：" + message)
+        ws.send(new Blob([message]));
+      }, 60);
+      showMessage.append(message);
+      // if (receiveNum >= 5) {
+      //   receiveDom.innerText = '';
+      //   showMessage.innerText = '';
+      //   receiveNum = 0;
+      // }
+      // receiveNum++
+      // receiveDom.append(`${reader.result}`);
+      // showMessage.append(`${reader.result}`);
+    }
+
+    const createWs = () => {
+      // const robotId = document.getElementById('robotId').value;
+      // const ip = document.getElementById('ip').value;
+      // const ip = "192.168.64.135:10088";
+      const ip = "192.168.20.21:10088";
+      //  const ip = "192.168.0.65:3000/:10088";
+      //const ip = "192.168.0.67:10088";
+      //
+      // const ip = "121.32.24.86:10088";
+      const robotId = "faf4a54a4f4";
+
+      // const ip = "121.32.24.86:3000/:10088";
+      //  const robotId = "10088";
+      
+      //  const robotId = "DCVS320A02210019";
+      // const robotId = "DCVA2A020B0001000000";
+      // const robotId = "145658896";
+      // const robotId = "123456ffff";
+      if (!ip) {
+        alert('请先填写ip');
+        return;
+      }
+      if (!robotId) {
+        alert('请先填写机器人id');
+        return;
+      }
+      ws = new WebSocket(`ws://${ip}/ws/s/${robotId}`);
+      // ws = new WebSocket(`ws://${ip}/ws/r/${robotId}`);
+      // ws = new WebSocket(`ws://${ip}:10088/ws/r/${robotId}`);
+      ws.onopen = () => {
+        alert('已成功连接');
+        // setInterval(() => {
+        //
+        // }, 5000)
+      }
+      ws.onmessage = e => {
+        var data = e.data;
+        console.log(data);
+        // var newVar = typeof data;
+        // console.log("类型：" + newVar)
+        reader.readAsText(data);
+      };
+      ws.onclose = () => {
+        alert('websocket连接已关闭')
+      };
+      ws.onerror = () => {
+        alert('websocket连接错误')
+      }
+    }
+
+    const closeWs = () => {
+      ws.close();
+    }
+
+    function strToBinary(str) {
+      var result = [];
+      var list = str.split("");
+      for (var i = 0; i < list.length; i++) {
+        if (i != 0) {
+          result.push(" ");
+        }
+        var item = list[i];
+        var binaryStr = item.charCodeAt().toString(2);
+        result.push(binartStr);
+      }
+      return result.join("");
+    }
+
+    function binaryToStr(str) {
+      var result = [];
+      var list = str.split(" ");
+      for (var i = 0; i < list.length; i++) {
+        var item = list[i];
+        var asciiCode = parseInt(item, 2);
+        var charValue = String.fromCharCode(asciiCode);
+        result.push(charValue);
+      }
+      return result.join("");
+    }
+  </script>
+</body>
+
+</html>

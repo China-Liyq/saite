@@ -1,0 +1,13 @@
+
+//websocket送前端数据
+
+{
+    "data":{
+        "type":1,
+        "status":1
+
+    },
+    "result": "success",
+    "pageId": "pushWarnInfo"
+}
+
