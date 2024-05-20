@@ -1,0 +1,17 @@
+
+
+
+
+
+
+Protobuf协议
+
+消息命名规则：
+XxxCmd
+代表：客户端发给服务器的消息
+UserEntryCmd
+
+XxxResult
+代表：服务器响应给客户端的消息
+UserEntryResult
+
