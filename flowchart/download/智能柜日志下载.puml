@@ -1,0 +1,92 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+skinparam sequenceMessageAlign center
+'skinparam monochrome reverse
+
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+'ParticipantBackgroundColor DodgerBlue
+ParticipantFontSize 17
+'ParticipantFontColor #A9DCDF
+
+}
+
+
+participant "前端" as front
+participant "运维系统" as omsys
+participant "人机" as robot
+participant "文件服务" as filesys
+participant "阿里OSS" as oss
+
+'autonumber "<font color=blue><b>[##]"
+'note right front : 1.选择智能柜+日期
+'front -> omsys: 选择智能柜+日期+点击"下载"按钮
+'
+'omsys -[#red]> robot: 发送指令：获取类型+时间段内运行文件信息
+'
+'robot --[#red]> omsys: ACK
+'
+'omsys -> front: 提醒指令下发成功
+'autonumber stop
+
+autonumber "<font color=blue><b>[##]"
+
+note right front : 1.人机上传文件
+front -> omsys: 前端用户点击“下载”
+activate front #DarkSalmon
+
+omsys --[#red]> robot: 发送指令：下载运行数据文件
+
+robot ---[#red]> omsys: 响应指令:ACK
+note right omsys : 人机请求上传地址
+robot -[#red]> omsys: 获取上传/分块上传文件地址
+omsys --[#red]> robot: 响应指令:ACK
+
+omsys -> filesys: 请求上传/分块上传文件地址
+
+filesys -> omsys: 响应上传/分块上传地址
+
+omsys -> omsys: 生成上传记录，状态：初始化
+
+omsys -[#red]> robot: 发送指令：发送上传/分块上传地址
+
+robot --[#red]> omsys: 响应指令：应答ACK
+
+robot -> oss: 按上传/分块上传文件
+
+robot -[#red]> omsys: 上报开始上传文件
+
+omsys -> omsys: 更新上传记录，状态：上传文件中
+
+robot --[#red]> omsys: 定时上报文件上传进度
+
+robot -[#red]> omsys: 文件上传结束：上报上传文件结果
+
+
+omsys --> filesys: 发送合并分开文件指令
+
+filesys --> oss: 合并文件
+
+oss --> filesys: 响应合并结果
+
+filesys --> omsys: 响应合并结果
+
+omsys -> omsys: 更新上传记录，状态：上传成功/失败
+
+omsys -> front: 通知用户文件上传完毕，提醒本地下载
+autonumber stop
+|||
+autonumber "<font color=blue><b>[##]"
+note right front : 2.用户本地下载
+
+deactivate front
+front -> front: 下载任务中，用户选择文件点击“下载”
+front -> omsys: 请求文件下载地图
+omsys -> filesys: 请求下载地图
+
+filesys -> omsys: 响应下载地图
+
+omsys -> front: 响应下载地图
+
+@enduml

@@ -1,0 +1,61 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+skinparam sequenceMessageAlign center
+
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+ParticipantFontSize 17
+}
+autonumber "<font color=blue><b>[##]"
+
+actor "用户" as user
+participant "运维系统" as omsys
+participant "人机" as device
+participant "文件服务系统" as filesys
+participant "阿里OSS" as oss
+
+note over omsys : 包含机器人Id集+建图包Id
+user -> omsys: 选择建图包给机器人升级
+note over filesys : 目前只支持整个文件下载\n分段下载还需要调研与开发
+omsys -> filesys: 请求建图工具包文件/分段下载地址
+|||
+filesys --> omsys: 响应建图工具包文件/分段下载地址
+omsys -> omsys : 记录升级信息\n状态：初始化
+omsys -[#red]> device: 传递建图工具包文件/分段下载地址
+activate device #DarkSalmon
+device --> omsys : 记录升级信息\n状态：下发中
+
+device -> oss: 按部署文件/分段下载地址下载文档
+device --> omsys: 上报下载进度
+omsys --> user : 推送下载进度
+device --> omsys: 上报下载文件结果
+note over omsys, device : 上报下载异常 --> 记录升级信息状态：下发失败\n上报下载成功 --> 记录升级信息状态：下发更新中
+omsys --> user : 推送人机下载文件结果
+note over device : 人机下载完成后
+device --> device: 替换人机和导航文件+重启清扫车
+device --> omsys: 上报升级结果
+deactivate device
+note over omsys, device : 上报更新失败 --> 记录升级信息状态：更新失败\n上报更新成功 --> 记录升级信息状态：更新成功
+omsys --> user : 推送人机升级结果
+'|||
+'build -[#red]> omsys: 请求存储建图工具包(名称，大小，项目名称/Id)(携带token)
+'activate build #DarkSalmon
+'
+'omsys -> omsys: 保存建图信息
+'
+'omsys -> filesys: 请求上传/分块上传文件地址
+'
+'filesys --> omsys: 响应上传/分块上传地址
+'
+''omsys -> build: 传递上传/分块上传地址建图工具
+'return 传递上传/分块上传地址建图工具
+'deactivate build
+'|||
+'
+'build -> oss: 按上传/分块上传地址上传文件
+'|||
+'note over build, omsys : 建图工具：文件上传完毕/网络异常取消\n运维系统：12h超时取消
+''note over omsys : a.文件上传完毕\nb.网络异常取消
+'build -> omsys: 上报上传/分块上传文件结果
+'|||
+@enduml

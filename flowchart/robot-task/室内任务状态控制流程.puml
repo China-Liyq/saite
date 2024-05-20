@@ -1,0 +1,68 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+skinparam sequenceMessageAlign center
+'skinparam monochrome reverse
+
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+'ParticipantBackgroundColor DodgerBlue
+ParticipantFontSize 17
+'ParticipantFontColor #A9DCDF
+
+}
+
+autonumber "<font color=blue><b>[##]"
+
+participant "用户" as user
+
+participant "运维系统" as omsys
+
+participant "人机" as robot
+note right user : 1.缓存当前任务
+
+robot -[#red]> omsys: 人机上报当前任务站点集、乘梯和过门状态
+omsys --[#red]> robot: 回复ACK
+
+omsys -> omsys: 缓存记录当前任务信息
+
+robot -[#red]> omsys: 人机上报行到站状态
+omsys --[#red]> robot: 回复ACK
+
+omsys -> omsys: 更新缓存当前任务站点信息
+
+autonumber stop
+
+autonumber "<font color=blue><b>[##]"
+
+note right user : 2.查看当前任务
+
+user -[#red]> omsys: 用户获取当前任务站点集、乘梯和过门状态信息
+
+omsys-->omsys: 按设备从缓存获取当前任务数据
+
+omsys --[#red]> user: 响应当前任务站点集、乘梯和过门状态信息
+
+note right user : 3.查看最近一个任务
+
+user -[#red]> omsys: 用户获取最近一次任务站点集、乘梯和过门状态信息
+
+omsys -> robot: 请求最近一次任务站点集、乘梯和过门状态信息
+
+robot --[#red]> omsys: 回复ACK
+
+robot -[#red]> omsys: 回复最近一任务信息
+
+omsys --[#red]> user: 响应最近一次任务站点集、乘梯和过门状态信息
+
+autonumber stop
+
+autonumber "<font color=blue><b>[##]"
+note right user : 4.下发指令
+
+omsys -[#red]> robot : 下发回复/取消任务指令
+
+robot --[#red]> omsys: 答复收到ACK
+
+
+@enduml

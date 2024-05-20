@@ -1,0 +1,43 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+skinparam sequenceMessageAlign center
+'skinparam monochrome reverse
+
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+'ParticipantBackgroundColor DodgerBlue
+ParticipantFontSize 17
+'ParticipantFontColor #A9DCDF
+
+}
+
+autonumber "<font color=blue><b>[##]"
+
+participant "用户" as user
+
+participant "运维系统" as omsys
+
+participant "人机" as robot
+
+participant "任务" as task
+|||
+omsys -> omsys: 电池保养日期为零时
+
+user -> omsys: 用户操作保养
+
+omsys -> robot: 运维系统将保养信息发送给人机系统
+
+robot --> omsys: 回复ACK
+|||
+
+robot --> omsys: 人机上报保养任务已开始\n（包含任务ID）
+
+omsys -> omsys: 运维系统生成保养记录，保养状态为进行中
+
+
+robot --> omsys: 人机保养上报成功/失败结果
+omsys --> robot: 回复ACK
+omsys -> omsys: 按结果更新保养结果
+|||
+@enduml

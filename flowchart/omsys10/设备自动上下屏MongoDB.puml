@@ -1,0 +1,62 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+skinparam sequenceMessageAlign center
+'skinparam monochrome reverse
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+'ParticipantBackgroundColor DodgerBlue
+ParticipantFontSize 20
+'ParticipantFontColor #A9DCDF
+}
+
+participant "人机" as robot
+participant "运维系统" as omsys
+participant "业务" as task
+autonumber "<font color=blue><b>[###]"
+
+note right of robot : 1.设备上报作业
+
+robot -> omsys: 人机上报开始作业
+
+omsys -> task: 核实用户（不存在用户-1）是否有大屏标签页
+
+'autonumber stop
+|||
+'autonumber "<b>(###)"
+
+note right of robot : a.获取可关联设备大屏标签页
+
+omsys -> task: 如果没有，创建大屏标签页+序号(默认1)
+
+omsys -> task: 如果有，顺序核实大屏标签加载设备超上限
+
+omsys -> task: 如果超上限，创建大屏标签页+序号
+
+note right of robot : b.新增设备
+
+omsys -> task: 增加设备信息到上线信息
+
+
+note right of robot : 2.设备上报作业结束
+autonumber "<font color=blue><b>[###]"
+
+omsys -> task : 获取用户所有大屏标签页和设备集
+
+omsys -> task : 设备集中移除下线设备
+
+omsys -> task : 按顺将标签页和设备集重新关联设备\n标签页内无关联设备，删除标签页
+
+
+note right of robot : 3.修改样式
+autonumber "<font color=blue><b>[###]"
+
+omsys -> task : 获取用户所有大屏标签页和设备集
+
+omsys -> task : 按顺将标签页和设备集重新关联设备
+
+omsys -> task : 标签页不足，新建标签 \n 标签页内无关联设备，删除标签页
+
+
+
+@enduml

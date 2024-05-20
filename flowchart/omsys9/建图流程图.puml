@@ -1,0 +1,50 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+skinparam sequenceMessageAlign center
+'skinparam monochrome reverse
+
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+'ParticipantBackgroundColor DodgerBlue
+ParticipantFontSize 17
+'ParticipantFontColor #A9DCDF
+
+}
+
+autonumber "<font color=blue><b>[##]"
+participant "建图工具" as build
+participant "运维系统" as omsys
+participant "文件服务系统" as filesys
+participant "阿里OSS" as oss
+
+build -> omsys: 请求验证用户名+密码
+
+note over omsys : 核验用户存在/有效
+
+omsys --> build: 响应Token
+|||
+build -> omsys: 请求用户清扫车项目权限(携带token)
+
+omsys --> build: 响应用户关联清扫车项目名称
+|||
+build -[#red]> omsys: 请求存储建图工具包地址(名称,大小,项目名称,Id)(携带token)
+activate build #DarkSalmon
+
+omsys -> filesys: 请求上传/分块上传文件地址
+
+filesys --> omsys: 响应上传/分块上传地址
+
+'omsys -> build: 传递上传/分块上传地址建图工具
+return 传递上传/分块上传地址建
+deactivate build
+|||
+
+build -> oss: 按上传/分块上传地址上传建图工具包文件
+|||
+note over build, omsys : 建图工具：文件上传完毕/网络异常取消
+'note over omsys : a.文件上传完毕\nb.网络异常取消
+build -> omsys: 上报上传/分块上传文件结果(携带token)
+|||
+omsys -> omsys: 保存建图工具包信息
+@enduml

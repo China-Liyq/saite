@@ -1,0 +1,34 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+skinparam sequenceMessageAlign center
+'skinparam monochrome reverse
+
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+'ParticipantBackgroundColor DodgerBlue
+ParticipantFontSize 17
+'ParticipantFontColor #A9DCDF
+
+}
+
+autonumber "<font color=blue><b>[##]"
+
+participant "用户" as user
+
+participant "运维系统" as omsys
+
+participant "人机" as robot
+
+
+
+user -[#red]> omsys : 用户下发移动+方向控制
+
+omsys -[#red]> robot : 下发移动+方向控制指令
+
+omsys <[#red]-- robot : 答复ACK指令
+
+omsys --[#red]> user: 响应状态信息
+
+
+@enduml

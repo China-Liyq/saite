@@ -1,0 +1,46 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+skinparam sequenceMessageAlign center
+'skinparam monochrome reverse
+
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+'ParticipantBackgroundColor DodgerBlue
+ParticipantFontSize 17
+'ParticipantFontColor #A9DCDF
+
+}
+
+autonumber "<font color=blue><b>[##]"
+participant "运维系统" as omsys
+
+participant "文件服务" as filesys
+
+participant "OSS" as OSS
+
+'note over DCU, robot : 人机执行行走任务
+
+omsys -> omsys: 每日定时任务
+
+omsys -> omsys: 从MongoDB中读取\n写入Json文件中
+
+omsys -> filesys: 按文件名称大小获取上传OSS路径
+
+
+filesys -> OSS: 获取上传OSS路径
+
+OSS -> filesys: 返回上传OSS路径
+
+filesys -> omsys: 转发上传OSS路径
+
+omsys -> OSS: 按路径上传文件
+
+
+omsys -> filesys: 上报文件上传完毕
+
+omsys -> omsys: 记录上传信息
+
+
+
+@enduml

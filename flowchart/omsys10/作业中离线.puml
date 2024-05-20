@@ -1,0 +1,58 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+skinparam sequenceMessageAlign center
+'skinparam monochrome reverse
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+'ParticipantBackgroundColor DodgerBlue
+ParticipantFontSize 20
+'ParticipantFontColor #A9DCDF
+}
+participant "人机" as robot
+participant "运维系统" as omsys
+participant "业务" as task
+
+autonumber "<font color=blue><b>[000]"
+note right of robot : 1.设备在线及作业上报
+robot -> omsys: 人机上报心跳
+
+robot -> omsys: 人机上报开始作业
+
+omsys --> task: 缓存开始作业信息
+
+note right of robot : 2.设备作业中离线
+robot -> omsys: 设备与人机连接断开
+
+omsys -> omsys: 检测到设备离线
+task --> omsys: 从缓存获取作业信息
+
+omsys --> task: 存在作业信息,缓存离线信息
+autonumber stop
+
+|||
+note right of robot : 3.告警监测
+autonumber "<b>(<u>##<u>)"
+
+task -> omsys: 定时任务检测
+activate omsys #DarkSalmon
+task --> omsys: 从缓存获取作业和离线信息
+omsys -> omsys: 与当前时间获取离线时差\n如果超过且未提醒，运维系统产生告警
+omsys -> task: 缓存中记录告警已触发提醒
+deactivate omsys
+autonumber stop
+
+|||
+note right of robot : 4.设备再次上线
+autonumber 8 "<font color=blue><b>[000]"
+robot -> omsys: 设备上报心跳
+omsys -> omsys: 运维系统检测到设备上线
+
+task -> omsys: 从缓存获取作业+离线信息
+
+omsys -> task: 存在作业+离线信息，记录设备工作离线信息
+
+|||
+omsys -> omsys: 记录生成后，关闭告警，关闭提醒
+
+@enduml

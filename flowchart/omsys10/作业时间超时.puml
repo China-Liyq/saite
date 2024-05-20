@@ -1,0 +1,43 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+skinparam sequenceMessageAlign center
+'skinparam monochrome reverse
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+ParticipantBackgroundColor DodgerBlue
+ParticipantFontSize 20
+ParticipantFontColor #A9DCDF
+}
+autonumber "<font color=blue><b>[##]"
+
+participant "人机" as robot
+participant "运维系统" as omsys
+participant "业务" as task
+
+autonumber "<font color=blue><b>[###]"
+note right of robot : 1.设备在线及作业上报
+robot -> omsys: 人机上报心跳
+robot -> omsys: 人机上报开始作业
+omsys -> task: 缓存记录开始作业信息
+|||
+
+autonumber "<b>(<u>##<u>)"
+note right of robot : 2.告警监测
+robot -> omsys: 人机上报心跳
+activate omsys #DarkSalmon
+task -> omsys: 从缓存中获取作业信息
+
+omsys -> omsys: 存在作业信息且与当前时间比较时差\n如果超过时长且未提醒，运维系统产生告警
+omsys -> task: redis中记录告警已触发提醒
+
+deactivate omsys
+|||
+autonumber 4 "<font color=blue><b>[###]"
+note right of robot : 3.设备上报作业结束
+robot -> omsys : 人机上报作业完成
+task -> omsys: 从缓存获取作业信息
+omsys -> task : 存在作业信息，生成一条作业记录
+omsys -> omsys : 关闭告警，关闭提醒
+
+@enduml

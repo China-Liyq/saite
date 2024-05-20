@@ -1,0 +1,51 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+skinparam sequenceMessageAlign center
+
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+ParticipantFontSize 17
+}
+autonumber "<font color=blue><b>[##]"
+
+'actor "用户" as user
+participant "人机" as device
+participant "运维系统" as omsys
+participant "文件服务系统" as filesys
+participant "阿里OSS" as oss
+
+device --> omsys: 人机连接运维系统
+
+omsys -> device: 运维主动找人机获取地图列表
+
+device -> omsys: 人机响应地图列表
+
+note over omsys: 运维系统判断是否需要下载地图
+
+omsys -> device: 运维系统下发下载地图指令
+
+device --> omsys: 人机回复ACK
+
+device --> omsys: 人机获取OSS上传URL
+
+
+omsys -[#red]> filesys: 转发'人机获取OSS上传URL'
+activate omsys #DarkSalmon
+|||
+filesys -> oss: 请求获取OSS上传URL地址
+
+oss -> filesys: 响应OSS上传URL地址
+
+filesys -[#red]> omsys: 转发OSS上传URL地址
+
+deactivate omsys
+omsys -> device: 发送人机OSS上传URL地址
+
+|||
+device -> oss: 按OSS上传URL上传文件
+
+device -> omsys: 上报上传结果给到运维
+|||
+omsys -> omsys: 运维系统更新记录
+
+@enduml

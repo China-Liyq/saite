@@ -1,0 +1,71 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+skinparam sequenceMessageAlign center
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+ParticipantFontSize 17
+}
+'autonumber "<font color=blue><b>[##]"
+
+participant "用户" as user
+
+participant "运维系统" as omsys
+
+participant "模拟机器人" as device
+
+participant "缓存" as Redis
+
+participant "MongoDB" as MongoDB
+
+
+autonumber "<font color=blue><b>[###]"
+|||
+note right of user : 1.用户一键上线
+
+user -> omsys: 用户选择设备、数量上线
+|||
+note right of user : 2.获取模拟设备集
+omsys -> omsys: 获取模拟设备集
+
+omsys -> omsys: 如果模拟数量不足
+
+omsys -> user : 提醒用户模拟设备剩余数量
+
+'2.1 获取设备缓存不存在\n2.2 获取设备缓存为模拟设备\n2.3 获取设备缓存离线超过一个月的设备
+'omsys -> device: 2.4 返回模拟设备
+
+omsys -> device: 如果模拟数量足够，响应模拟设备集
+|||
+note right of user : 3.模拟设备上线
+
+device -> omsys: 设备按唯一Sn连接运维系统
+
+device -> device: 数组维护所有客户端连接
+
+note right of device : 1.支持再添加模拟设备\n2.支持一键下线所有模拟设备
+|||
+note right of user : 4.匹配地图坐标数据
+
+device -> MongoDB : 获取设备和地图集信息总数量
+
+note right of device : 设备和地图集信息\n序号从1开始有序增加
+
+device -> device: 序号按上次序号+1开始顺延
+
+device -> Redis: 从Redis缓存获序号否已存在
+
+note right device : 如果序号存在，比较间隔时间：距当前时刻1小时内\n如果是，重新顺延序号\n再此检验序号在Redis缓存是否存在
+
+device -> device: 按如上步骤，顺延序号直到找到可用的序号
+
+device -> MongoDB: 按序号获取设备和地图集信息，再次过滤
+
+note right device : 按设备信息效验设备是否在线，\n比较在线设备当前楼层是否与模拟设备楼层相同\n如果相同，重新执行随机生成序号流程
+
+device -> omsys : 响应地图编号，位置坐标为
+
+device -> omsys : 在线2分钟后上报作业路线集
+
+device -> omsys : 在线2分钟后每隔5秒钟替换使用实时坐标
+
+@enduml

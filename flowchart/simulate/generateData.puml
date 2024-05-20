@@ -1,0 +1,56 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+start
+:读取模拟数据源Excel;
+:剧今历史天数/剧今未来天数;
+:筛选节假日和周末;
+if (节假日和周末上线) is (上线) then
+    :上线率;
+    :总上线天数;
+    if (总上线天数<无假日和无周末总天数) is (yes) then
+        :无假日和无周末总天数剔除差值天数;
+    else if(总上线天数<无假日和无周末总天数+周末总天数) is(yes) then
+        :无假日和无周末总天数+周末总天数剔除差值天数;
+    else if(总上线天数>无假日和无周末总天数+周末总天数) is(yes) then
+        :无假日和无周末总天数+周末总天数+假日总天数剔除差值天数;
+    endif
+else (不上线)
+    :上线率;
+    :总上线天数;
+    :无假日和无周末总天数剔除差值天数;
+endif
+
+
+
+if (Page.onSecurityCheck) then (true)
+  :Page.onInit();
+  if (isForward?) then (no)
+    :Process controls;
+    if (continue processing?) then (no)
+      stop
+    endif
+
+    if (isPost?) then (yes)
+      :Page.onPost();
+    else (no)
+      :Page.onGet();
+    endif
+    :Page.onRender();
+  endif
+else (false)
+endif
+
+if (do redirect?) then (yes)
+  :redirect process;
+else
+  if (do forward?) then (yes)
+    :Forward request;
+  else (no)
+    :Render page template;
+  endif
+endif
+
+stop
+
+@enduml

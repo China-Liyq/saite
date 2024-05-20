@@ -1,0 +1,98 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+skinparam sequenceMessageAlign center
+'skinparam monochrome reverse
+
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+'ParticipantBackgroundColor DodgerBlue
+ParticipantFontSize 17
+'ParticipantFontColor #A9DCDF
+
+}
+
+autonumber "<font color=blue><b>[##]"
+
+'participant "DCU" as DCU
+
+participant "人机" as robot
+
+participant "运维系统" as omsys
+
+participant "BMS数据更新1" as task1
+
+participant "BMS数据更新2" as task2
+
+participant "BMS数据保存" as task3
+
+'note over DCU, robot : 人机执行行走任务
+
+'DCU -> robot: DCU主动按频率上报bms电池信息
+
+robot -> omsys: 人机上报bms电池信息
+
+omsys -> task1: 人机上报bms电池信息
+
+omsys -> task2: 人机上报bms电池信息
+
+
+note over task1 : BMS数据中电池序列号释放存在？
+
+task1 -> task2: BMS数据无电池序列号\n或电池序列号不合规则
+
+note over task2 : 设备缓存判断电池序号是否存在？\n此为系统按设备+电池组合成唯一序号
+
+task2 -> task2: 存在电池序号
+
+task2 -> task1: 存在电池序号\n执行BMS数据更新1业务
+|||
+task2 -> task2: 不存在电池序号
+
+note over task2 : 前置条件：\n导入Excel文件到系统\n识别文件中设备与电池数据存入设备与电池基础数据库
+
+task2 -> task2: 设备信息匹配数据库电池数据信息\n系统按设备+电池组合成唯一序号
+
+task2 -> task1: 执行BMS数据更新1业务
+
+'note over task2 : 按序号记录电池信息\n记录电池关联信息\n设备缓存电池序号
+
+task1 -> task1: 存在电池序列号
+
+task1 -> task1: 缓存获取数据
+
+note over task1 : 缓存判断BMS数据更新业务
+
+task1 -> task3: 已处理BMS数据更新业务\n将最新数据更新入缓存
+
+task1 -> task1: 未处理BMS数据更新业务
+|||
+task1 -> task1: 首次上传数据处理
+note over task1 : 首次上传记录电池信息\n记录电池关联信息
+
+|||
+task1 -> task1: 非首次上传数据
+note over task1 : a.如果电池报废，更新报废信息，\n记录电池关联信息
+
+note over task1 : b.如果项目更改，记录电池关联设备项目；
+
+note over task1 : c.如果设备变更，报废设备关联旧电池\n按新电池更新关联信息
+
+note over task3 : 保存高频电池信息
+
+task3 -> task3: BMS数据写入MongoDB
+
+task3 -> task3: 定时任务(每日)将昨天BMS数据写入到Json文件
+
+task3 -> task3: Json文件上传OSS，运维记录上传路径和文件名称
+
+task3 -> task3: 导航调用运维接口按日期获取日期文件下载地址
+
+
+|||
+omsys -> omsys: 收到人机上报电池数据，不回复ACK
+
+
+|||
+
+@enduml

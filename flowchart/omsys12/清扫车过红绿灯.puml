@@ -1,0 +1,56 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+skinparam sequenceMessageAlign center
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+ParticipantFontSize 17
+}
+'autonumber "<font color=blue><b>[##]"
+
+participant "前端" as front
+
+participant "运维系统" as omsys
+
+participant "人机" as device
+
+participant "导航" as dcu
+
+
+autonumber "<font color=blue><b>[###]"
+note right of front : 1.清扫车进入红绿灯路口
+
+device --> omsys: 人机心跳上报进入红绿灯路口状态
+
+dcu -> device: 检测到设备进入路口,上报"通过路口“告警
+
+device -> omsys: 人机转发上报"通过路口“告警
+
+omsys --> device: 答复ACK
+
+omsys -> front: "通过路口“告警提醒
+
+
+
+|||
+autonumber "<font color=blue><b>[###]"
+note right of front : 2.运维人员介入
+
+front -> omsys: 触发"通过路口"接口
+
+omsys --> omsys: 检测设备是否在红绿灯路口状态
+
+omsys -> device: 红绿灯路口状态为真,下发"通过路口"指令
+
+device --> omsys: 答复ACK
+
+device -> dcu: 转发"通过路口"指令
+
+dcu -> device: 上报解除"通过路口"告警
+
+device-> omsys: 转发上报解除"通过路口"告警
+
+omsys --> device: 答复ACK
+
+omsys --> omsys: "通过路口"告警解除业务
+
+@enduml

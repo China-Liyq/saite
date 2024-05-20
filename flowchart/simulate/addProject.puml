@@ -1,0 +1,21 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+start
+:添加模拟项目设备;
+:1.读取表格项目名称;
+if(效验项目名称存在) then (false)
+    :添加项目,标记为模拟项目;
+else (true)
+endif
+
+stop
+
+:2.添加设备;
+if(效验设备Sn存在) then (false)
+    :添加设备,标记为模拟设备;
+else (true)
+endif
+
+stop
+@enduml

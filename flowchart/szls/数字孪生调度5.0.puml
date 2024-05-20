@@ -1,0 +1,51 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+skinparam sequenceMessageAlign center
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+ParticipantFontSize 17
+}
+'autonumber "<font color=blue><b>[##]"
+
+participant "3D界面" as user
+
+participant "调度系统" as idms5
+
+participant "缓存" as Redis
+
+participant "机器人" as device
+
+participant "梯控" as lift
+
+autonumber "<font color=blue><b>[###]"
+note right of user : 1.用户验证
+
+user -> idms5: 登录：账号+密码
+
+idms5 -> idms5: 验证账号+生成SaToken
+
+idms5 -> user: 返回SaToken
+autonumber "<b>(<u>##<u>)"
+
+note right of user : 2.实时数据记录
+
+device --> idms5: 上报设备实时信息
+
+lift --> idms5: 上报设备实时信息
+
+idms5 --> Redis: 将机器人/梯控信息存入缓存中
+
+autonumber 4 "<font color=blue><b>[###]"
+
+note right of user : 3.获取实时数据
+
+user -> idms5: 获取设备信息+SaToken
+
+idms5 -> idms5: 验证SaToken
+
+idms5 --> Redis: 获取缓存数据
+Redis --> idms5: 获取缓存数据
+
+idms5 --> user : 响应结果
+
+@enduml

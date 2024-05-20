@@ -1,0 +1,26 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+skinparam sequenceMessageAlign center
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+ParticipantFontSize 17
+}
+autonumber "<font color=blue><b>[##]"
+
+actor "用户" as user
+participant "运维系统" as omsys
+participant "人机" as device
+participant "DCU" as DCU
+
+DCU -> device: 定时上报BMS信息
+
+device -> omsys: 转发BMS信息到运维
+
+omsys -> omsys: 缓存BMS信息到运维
+
+note over user : 用户控制遥控界面
+
+user -> omsys: 选择获取BMS信息按钮
+
+omsys -> user: 获取缓存结果响应前端
+@enduml

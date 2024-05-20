@@ -1,0 +1,46 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+skinparam sequenceMessageAlign center
+'skinparam monochrome reverse
+
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+'ParticipantBackgroundColor DodgerBlue
+ParticipantFontSize 17
+'ParticipantFontColor #A9DCDF
+
+}
+
+autonumber "<font color=blue><b>[##]"
+
+
+participant "人机" as robot
+
+participant "运维系统" as omsys
+
+participant "业务" as task
+
+'note over DCU, robot : 人机执行行走任务
+
+
+robot -> omsys: 人机上报bms电池信息
+
+
+omsys -> task: 运维系统处理业务
+
+task -> task: 从redis获取缓存信息
+
+note over task : 缓存中设备Id为键，\n值记录时间电池信息
+
+task -> task: 业务核实电量比例变动\n（增大或者增小）
+
+note over task : 上报电量跳变1-n之间时，\n比较时差是否小于配置最大时长
+task -> task: 未满足说明未跳变，\n更新缓存中时间和电池信息
+task -> task: 满足说明跳变了，\n记录跳变前和跳变后信息，\n更新此刻时间和电池信息入缓存
+
+
+
+|||
+
+@enduml

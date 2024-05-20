@@ -1,0 +1,77 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+skinparam sequenceMessageAlign center
+'skinparam monochrome reverse
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+'ParticipantBackgroundColor DodgerBlue
+ParticipantFontSize 20
+'ParticipantFontColor #A9DCDF
+}
+autonumber "<font color=blue><b>[##]"
+
+participant "人机" as robot
+
+participant "运维系统" as omsys
+
+participant "业务" as task
+autonumber "<font color=blue><b>[###]"
+note right of robot : 1.设备在线及作业上报
+robot -> omsys: 人机上报心跳
+robot -> omsys: 人机上报开始作业
+omsys --> task: 缓存记录开始作业信息
+note right of robot : 2.设备上报路线
+robot -> omsys: 人机上报了移动路线
+omsys --> task: 缓存记录设备上报移动路线
+note right of omsys : 注意：设备上报路线为空，需要清除上报路线标记
+|||
+note right of robot : 3.设备移动受阻
+robot -> omsys: 人机上报心跳
+omsys -> omsys: 监测设备移动速度低于<=0
+
+omsys <-- task: 从缓存获取作业+路线信息
+omsys --> task: 存在作业+路线信息，缓存记录受阻此刻信息
+autonumber stop
+|||
+autonumber "<b>(<u>##<u>)"
+note right of robot : 4.告警监测
+robot -> omsys: 人机上报心跳
+activate omsys #DarkSalmon
+task --> omsys: 从缓存获取作业+路线+受阻信息
+
+omsys -> omsys: 与当前时间比较受阻时差\n如果超过时长且未提醒，运维系统产生告警
+omsys -> task: 缓存记录告警已触发提醒
+
+deactivate omsys
+|||
+note right of robot : 5.移动受阻恢复
+|||
+autonumber 10 "<font color=blue><b>[###]"
+
+note right of robot : 5.1 设备移动恢复
+robot -> omsys: 人机上报心跳
+omsys -> omsys: 监测设备移动速度低于 > 0
+
+task --> omsys: 从缓存获取作业+路线+受阻信息
+omsys -> omsys: 存在且作业+路线+受阻与当前时长比超过5秒，生成一条受阻记录
+autonumber stop
+|||
+
+autonumber 10 "<font color=blue><b>[###]"
+note right of robot : 5.2 设备上报移动路线
+robot -> omsys: 人机上报移动路线
+task --> omsys: 从缓存获取作业+路线+受阻信息
+omsys -> omsys: 存在作业+路线+受阻信息且与当前时差超过5秒，生成一条受阻记录
+|||
+omsys -> task: 以上恢复生成一条受阻记录后,清除缓存受阻信息
+
+autonumber 10 "<font color=blue><b>[###]"
+note right of robot : 5.3 设备离线
+robot -> omsys: 设备与人机连接断开
+task --> omsys: 从缓存获取作业+路线+受阻信息
+omsys -> task: 存在作业+路线+受阻信息且与当前时差超过5秒，生成一条受阻记录
+
+omsys -> omsys: 关闭告警和关闭提醒
+
+@enduml
