@@ -22,13 +22,23 @@ participant "人机" as robot
 
 
 
-user -[#red]> omsys : 用户下发移动+方向控制
+user -[#red]> omsys : 用户获取车轮方向接口
 
-omsys -[#red]> robot : 下发移动+方向控制指令
+omsys -[#red]> omsys : 缓存记录车轮方向数据用户
+
+omsys -[#red]> omsys : 定时器触询问车轮缓存状态
+
+omsys -[#red]> omsys : 判断在线设备及获取车轮方向用户
+
+omsys -[#red]> robot : 需要：下发获取车轮方向指令
 
 omsys <[#red]-- robot : 答复ACK指令
 
-omsys --[#red]> user: 响应状态信息
+omsys <[#red]- robot : 上报车轮方向结果
+
+omsys -[#red]-> robot : 答复ACK指令
+
+omsys --[#red]> user: 响应车轮方向状态信息
 
 
 @enduml

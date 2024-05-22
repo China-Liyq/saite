@@ -103,5 +103,32 @@
     }
   }
 
+,
+
+{
+    "ori":"robot",
+    "dest":"devsys",
+    "cmd":"uploadStatus",
+    "id":"5252525252",
+    "data":{
+        "type":1,
+        "steeringAngle":30
+    }
+}
+,
+
+{
+    "ori":"robot",
+    "dest":"devsys",
+    "cmd":"uploadDriverMode",
+    "id":"5252525252",
+    "data":{
+        "type":2,
+        "mode":2
+    }
+}
+
+
+
 
 ]
