@@ -80,16 +80,6 @@
     <button onclick="updateTrafficLightCrossRoad()">应用</button>
   </div>
 
-  <div>
-    <!-- 在页面中添加一个文本框 -->
-    <span>taskDeviceStatus:</span>
-    <label>
-      <!-- 修改 trafficLightCrossRoad -->
-      <input type="text" id="taskDeviceStatusInput" placeholder="输入新的 taskDeviceStatus">
-    </label>
-    <button onclick="updateTaskDeviceStatus()">应用</button>
-  </div>
-
   <script type="text/javascript">
   // 默认 travelSpeed 值
     let externalLineSpeed = 30.5; 
@@ -130,24 +120,6 @@
     function setExternalStatus(status) {
       externalStatus = status;
     }
-
-    let taskDeviceStatus = 0;
-    function setTaskDeviceStatus(status) {
-      taskDeviceStatus = status;
-    }
-
-  function updateTaskDeviceStatus() {
-    const statusInput = document.getElementById('taskDeviceStatusInput');
-    const newStatus = parseInt(statusInput.value);
-    if (!isNaN(newStatus)) {
-      setTaskDeviceStatus(newStatus);
-      console.log('已更新 v:', taskDeviceStatus);
-    } else {
-      console.error('请输入有效数字作为 v');
-    }
-  }
-
-
     function updateStatus() {
       const statusInput = document.getElementById('statusInput');
       const newStatus = parseInt(statusInput.value);
@@ -230,7 +202,6 @@
           '"rainy":3,' +
           '"light":66,' +
           '"gpsSignal":0,' +
-          '"taskDeviceStatus":' + taskDeviceStatus +','+
           '"trafficLightCrossRoad":' + trafficLightCrossRoad +
           '}' +
           '}';
@@ -628,12 +599,12 @@
       // const robotId = document.getElementById('robotId').value;
       // const ip = document.getElementById('ip').value;
       // const ip = "192.168.64.135:10088";
-      // const ip = "192.168.20.192:10088";
+      const ip = "192.168.20.192:10088";
       //  const ip = "192.168.0.65:3000/:10088";
       //const ip = "192.168.0.67:10088";
       //
-      const ip = "121.32.24.86:10088";
-      const robotId = "faf4a54a4f4";
+      // const ip = "121.32.24.86:10088";
+      const robotId = "jiahaotestcar";
 
       // const ip = "121.32.24.86:3000/:10088";
       //  const robotId = "10088";
