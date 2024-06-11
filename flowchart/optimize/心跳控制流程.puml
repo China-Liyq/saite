@@ -1,0 +1,52 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+skinparam sequenceMessageAlign center
+'skinparam monochrome reverse
+
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+'ParticipantBackgroundColor DodgerBlue
+ParticipantFontSize 17
+'ParticipantFontColor #A9DCDF
+
+}
+
+autonumber "<font color=blue><b>[##]"
+
+participant "用户" as user
+
+participant "运维系统" as omsys
+
+'participant "人机" as robot
+
+note right user : 1.快速心跳用户
+
+user -> omsys: 用户进入快速心跳业务
+
+omsys -[#red]> omsys: 缓存记录快速心跳设备
+
+omsys -[#red]> omsys: 缓存记录设备快速心跳用户信息
+
+note right user : 2.设备心跳发送
+
+omsys -> omsys: 定时器每秒从缓存获取快速心跳设备
+
+omsys -[#red]> robot: 发送获取心跳指令
+
+robot --[#red]> omsys: 回复心跳
+
+omsys --[#red]> omsys: 按设备从缓存获取设备快速心跳用户
+
+user <- omsys: 按用户推送信息
+
+
+note right user : 3.资源清理
+
+omsys -[#red]> omsys: 设备离线清除相关数据
+
+omsys -[#red]> omsys: 用户离线清除相关缓存数据
+
+
+
+@enduml

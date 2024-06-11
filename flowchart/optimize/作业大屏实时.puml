@@ -1,0 +1,61 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+skinparam sequenceMessageAlign center
+'skinparam monochrome reverse
+
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+'ParticipantBackgroundColor DodgerBlue
+ParticipantFontSize 17
+'ParticipantFontColor #A9DCDF
+
+}
+
+autonumber "<font color=blue><b>[##]"
+
+participant "用户" as user
+
+participant "运维系统" as omsys
+
+'participant "人机" as robot
+
+note right user : 1.用户查看监控
+
+user -> omsys: 用户调用作业大屏/运维大屏
+
+omsys -[#red]> omsys: 缓存记录大屏快速心跳设备
+
+omsys -[#red]> omsys: 缓存记录大屏设备快速心跳用户信息
+
+omsys -[#red]> omsys: 缓存记录大屏延时任务
+
+note right user : 2.设备心跳信息发送
+
+omsys -> omsys: 定时器每秒从缓存获取大屏快速心跳设备
+
+omsys -[#red]> robot: 给设备发送心跳指令
+
+robot --[#red]> omsys: 恢复心跳
+
+omsys -> omsys: 缓存更新心跳数据
+
+
+note right user : 3.大屏过期用户清除
+
+omsys -[#red]> omsys: 大屏延时任务触发
+
+omsys -[#red]> omsys: 从缓存获取大屏设备快速心跳用户信息
+
+omsys -[#red]> omsys: 比较用户时间超时>5分钟
+
+omsys -[#red]> omsys: 处理完清理大屏延时任务缓存
+
+
+note right user : 3.资源清理
+
+omsys -[#red]> omsys: 设备离线清除相关数据
+
+omsys -[#red]> omsys: 用户离线清除相关缓存数据
+
+@enduml
