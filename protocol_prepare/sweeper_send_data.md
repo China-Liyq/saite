@@ -1,5 +1,7 @@
-[
 
+****
+
+```json
   {
     "ori":"robot",
     "dest":"devsys",
@@ -14,9 +16,9 @@
 
     }
   }
-  ,
+```
 
-
+```json
   {
     "ori":"robot",
     "dest":"devsys",
@@ -28,9 +30,9 @@
       "workData":[0,1,1,1]
     }
   }
-,
+```
 
-
+```json
   {
     "ori":"robot",
     "dest":"devsys",
@@ -41,7 +43,8 @@
       "status":1
     }
   }
-,
+```
+```json
   {
     "ori":"robot",
     "dest":"devsys",
@@ -53,7 +56,10 @@
       "failCode":1
     }
   }
-,
+```
+
+
+```json
   {
     "ori":"robot",
     "dest":"devsys",
@@ -70,7 +76,8 @@
       ]
     }
   }
-,
+```
+```json
 
   {
     "ori":"robot",
@@ -83,7 +90,8 @@
       "recordId":"1775097074182926336"
     }
   }
-,
+```
+```json
   {
     "ori":"robot",
     "dest":"devsys",
@@ -102,8 +110,10 @@
       ]
     }
   }
+```
 
-,
+
+```json
 
 {
     "ori":"robot",
@@ -115,7 +125,11 @@
         "steeringAngle":30
     }
 }
-,
+```
+
+
+
+```json
 
 {
     "ori":"robot",
@@ -128,7 +142,7 @@
     }
 }
 
-
+```
 
 
 ]

@@ -1,0 +1,43 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+skinparam sequenceMessageAlign center
+skinparam sequence {
+ParticipantBorderColor DeepSkyBlue
+ParticipantFontSize 17
+}
+'autonumber "<font color=blue><b>[##]"
+
+participant "用户" as user
+
+participant "调度系统" as sys
+
+participant "机器人" as device
+
+participant "阿里语音服务" as service
+
+autonumber "<font color=blue><b>[###]"
+note right of user : 1.项目管制语音通知
+
+sys -> sys: 调度系统配置项目语言通知
+
+note right of user : 2.站点号码配置
+
+sys -> sys: 调度系统配置站点号码
+
+note right of user : 3.人机上报任务状态
+
+device --> sys: 上报任务状态
+
+sys -> sys: 按上报任务状态来判断是否是配送任务
+
+sys -> sys: 以上满足，按任务配送站点信息来匹配同名站点
+
+sys -> sys: 以上满足，按上报任务状态来判断是否为到达站点
+
+sys -> sys: 以上满足，按设备项目核实项目语音同时是否开启
+
+sys -> sys: 以上满足，获取站点语音通知关联号码
+
+sys -> service: 以上满足，发送语音通知服务业务
+
+@enduml

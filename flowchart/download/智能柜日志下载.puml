@@ -19,39 +19,45 @@ participant "人机" as robot
 participant "文件服务" as filesys
 participant "阿里OSS" as oss
 
-'autonumber "<font color=blue><b>[##]"
-'note right front : 1.选择智能柜+日期
-'front -> omsys: 选择智能柜+日期+点击"下载"按钮
-'
-'omsys -[#red]> robot: 发送指令：获取类型+时间段内运行文件信息
-'
-'robot --[#red]> omsys: ACK
-'
-'omsys -> front: 提醒指令下发成功
-'autonumber stop
-
 autonumber "<font color=blue><b>[##]"
 
-note right front : 1.人机上传文件
-front -> omsys: 前端用户点击“下载”
+note right front : 1.用户选择下载
+front -> omsys: 用户-机器人-智能柜\n选择日期 -- 点击下载
 activate front #DarkSalmon
 
-omsys --[#red]> robot: 发送指令：下载运行数据文件
+omsys --[#red]> robot: 下发下载智能柜日志:机器人-->日期+智能柜SN
 
-robot ---[#red]> omsys: 响应指令:ACK
-note right omsys : 人机请求上传地址
+omsys --> omsys: 记录:机器人-智能柜-用户,状态：初始化
+
+robot ---[#red]> omsys: 响应ack
+
+robot -[#red]> omsys: 响应下载智能柜日志结果
+
+note right front : 2.文件大小验证
+
+robot --> robot: 人机与智能柜交互\n人机从智能柜获取到压缩日志后
+
+robot -[#red]> omsys: 人机找运维核实文件是否需要上传
+
+omsys --[#red]> robot: 响应ack
+
+omsys -[#red]> robot: 运维答复人机文件是否需要上传结果
+
+note right front : 3.文件上传
+
 robot -[#red]> omsys: 获取上传/分块上传文件地址
-omsys --[#red]> robot: 响应指令:ACK
 
-omsys -> filesys: 请求上传/分块上传文件地址
+omsys --[#red]> robot: 响应ACK
 
-filesys -> omsys: 响应上传/分块上传地址
+omsys -[#blue]> filesys: 请求上传/分块上传文件地址
 
-omsys -> omsys: 生成上传记录，状态：初始化
+filesys -[#blue]> omsys: 响应上传/分块上传地址
 
 omsys -[#red]> robot: 发送指令：发送上传/分块上传地址
 
-robot --[#red]> omsys: 响应指令：应答ACK
+omsys -> omsys: 更新上传记录，状态：获取上传地址
+
+robot --[#red]> omsys: 响应ACK
 
 robot -> oss: 按上传/分块上传文件
 
@@ -62,7 +68,6 @@ omsys -> omsys: 更新上传记录，状态：上传文件中
 robot --[#red]> omsys: 定时上报文件上传进度
 
 robot -[#red]> omsys: 文件上传结束：上报上传文件结果
-
 
 omsys --> filesys: 发送合并分开文件指令
 
@@ -78,15 +83,5 @@ omsys -> front: 通知用户文件上传完毕，提醒本地下载
 autonumber stop
 |||
 autonumber "<font color=blue><b>[##]"
-note right front : 2.用户本地下载
-
-deactivate front
-front -> front: 下载任务中，用户选择文件点击“下载”
-front -> omsys: 请求文件下载地图
-omsys -> filesys: 请求下载地图
-
-filesys -> omsys: 响应下载地图
-
-omsys -> front: 响应下载地图
 
 @enduml

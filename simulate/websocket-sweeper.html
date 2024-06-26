@@ -258,62 +258,63 @@
           ']' +
           '}' +
           '}';
-      } else if (obj['cmd'] === 'getMapList') {
-        message =
-          '{' +
-            '"ori":' + '"' + obj['dest'] + '",' +
-            '"dest":' + '"' + obj['ori'] + '",' +
-            '"cmd":' + '"' + obj['cmd'] + '",' +
-            '"id":' + '"' + obj['id'] + '",' +
-            '"time":' + '"' + obj['time'] + '",' +
-            '"status":0,' +
-            '"data":{' +
-              '"maps":[' +
-                '{' +
-                '"code":"A001",' +
-                '"version":"2.5",' +
-                '"image":"12212122.png",' +
-                '"resolution":0.5,' +
-                '"origin":[-14.5,-6.4,25.0],' +
-                '},' +
-                '{' +
-                '"code":"A002",' +
-                '"version":"2.1",' +
-                '"image":"111.png",' +
-                '"resolution":0.5,' +
-                '"origin":[-20.5,-20.4,25.0],' +
-                '},' +
-                '{' +
-                  '"code":"0",' +
-                  '"version":"005",' +
-                  '"image":"background_map_01.png",' +
-                  '"resolution":0.0927724,' +
-                  '"origin":[-42.854122, -307.35596],' +
-                  '"extendInfo": {'+
-                        '"no": "21",'+
-                        '"originX": -142.15452575683594,'+
-                        '"originY": -215.26229858398438,'+
-                        '"layers":['+
-                            '{'+
-                                '"layerIdx": 0,'+
-                                '"piecesNumOfY": 1,'+
-                                '"piecesNumOfX": 1,'+
-                                '"resolution": 0.10000000149011612,'+
-                                '"layerMaps": ['+
-                                    '"0_0_0.png"'+
-                              ' ]'+
-                          '}'+
-                        '],'+
-                        '"pieceSize": 1000,'+
-                        '"layerScale": 4,'+
-                        '"blankPng": "blank.png",'+
-                        '"layerNum": 1'+
-                    '}'+
-                '}' +
-              ']' +
-            '}' +
-          '}';
       }
+      // else if (obj['cmd'] === 'getMapList') {
+      //   message =
+      //     '{' +
+      //       '"ori":' + '"' + obj['dest'] + '",' +
+      //       '"dest":' + '"' + obj['ori'] + '",' +
+      //       '"cmd":' + '"' + obj['cmd'] + '",' +
+      //       '"id":' + '"' + obj['id'] + '",' +
+      //       '"time":' + '"' + obj['time'] + '",' +
+      //       '"status":0,' +
+      //       '"data":{' +
+      //         '"maps":[' +
+      //           '{' +
+      //           '"code":"A001",' +
+      //           '"version":"2.5",' +
+      //           '"image":"12212122.png",' +
+      //           '"resolution":0.5,' +
+      //           '"origin":[-14.5,-6.4,25.0],' +
+      //           '},' +
+      //           '{' +
+      //           '"code":"A002",' +
+      //           '"version":"2.1",' +
+      //           '"image":"111.png",' +
+      //           '"resolution":0.5,' +
+      //           '"origin":[-20.5,-20.4,25.0],' +
+      //           '},' +
+      //           '{' +
+      //             '"code":"0",' +
+      //             '"version":"005",' +
+      //             '"image":"background_map_01.png",' +
+      //             '"resolution":0.0927724,' +
+      //             '"origin":[-42.854122, -307.35596],' +
+      //             '"extendInfo": {'+
+      //                   '"no": "21",'+
+      //                   '"originX": -142.15452575683594,'+
+      //                   '"originY": -215.26229858398438,'+
+      //                   '"layers":['+
+      //                       '{'+
+      //                           '"layerIdx": 0,'+
+      //                           '"piecesNumOfY": 1,'+
+      //                           '"piecesNumOfX": 1,'+
+      //                           '"resolution": 0.10000000149011612,'+
+      //                           '"layerMaps": ['+
+      //                               '"0_0_0.png"'+
+      //                         ' ]'+
+      //                     '}'+
+      //                   '],'+
+      //                   '"pieceSize": 1000,'+
+      //                   '"layerScale": 4,'+
+      //                   '"blankPng": "blank.png",'+
+      //                   '"layerNum": 1'+
+      //               '}'+
+      //           '}' +
+      //         ']' +
+      //       '}' +
+      //     '}';
+      // }
       else if (obj['cmd'] === 'getCurrentMapCode') {
         message =
           '{' +
@@ -628,11 +629,11 @@
       // const robotId = document.getElementById('robotId').value;
       // const ip = document.getElementById('ip').value;
       // const ip = "192.168.64.135:10088";
-      // const ip = "192.168.20.192:10088";
+      const ip = "192.168.30.17:10088";
       //  const ip = "192.168.0.65:3000/:10088";
       //const ip = "192.168.0.67:10088";
       //
-      const ip = "121.32.24.86:10088";
+      // const ip = "121.32.24.86:10088";
       const robotId = "faf4a54a4f4";
 
       // const ip = "121.32.24.86:3000/:10088";
